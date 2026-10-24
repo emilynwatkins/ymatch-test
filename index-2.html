@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ymatch questionnaire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+/* ---------- tokens ---------- */
+:root{
+  --bg:#FBF7F3; --surface:#FFFFFF; --ink:#1F1A17; --muted:#6B625C; --line:#E8DFD6;
+  --accent:#C63D22; --accent-ink:#FFFFFF; --accent-soft:#FCE9E3; --error:#A0153E;
+  --fun-bg:#FFF5E3; --fun-line:#F1D9A9; --fun-ink:#8A5A00;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#17120F; --surface:#221B17; --ink:#F3ECE6; --muted:#B3A79E; --line:#3A2F29;
+    --accent:#FF8466; --accent-ink:#2A0F08; --accent-soft:#3A2119; --error:#FF7A93;
+    --fun-bg:#2C2314; --fun-line:#4A3A1E; --fun-ink:#F2C26B;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17120F; --surface:#221B17; --ink:#F3ECE6; --muted:#B3A79E; --line:#3A2F29;
+  --accent:#FF8466; --accent-ink:#2A0F08; --accent-soft:#3A2119; --error:#FF7A93;
+  --fun-bg:#2C2314; --fun-line:#4A3A1E; --fun-ink:#F2C26B;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none !important}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:17px; line-height:1.5;
+}
+.wrap{max-width:680px; margin:0 auto; padding:28px 20px 64px}
+
+/* ---------- header ---------- */
+.brand,h2{font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.brand{font-weight:800; font-size:clamp(2.4rem,7vw,3.4rem); letter-spacing:-0.03em; line-height:1; margin:0}
+.brand span{color:var(--accent)}
+.sub{color:var(--muted); margin:.5rem 0 1.5rem}
+.progress{display:flex; gap:4px; margin:0 0 .6rem}
+.progress i{flex:1; height:6px; border-radius:3px; background:var(--line)}
+.progress i.done{background:var(--accent); opacity:.45}
+.progress i.now{background:var(--accent)}
+.where{font-size:.9rem; color:var(--muted); margin:0 0 1.75rem}
+
+/* ---------- page ---------- */
+h2{font-size:1.75rem; font-weight:800; letter-spacing:-0.02em; line-height:1.15; margin:0 0 .4rem}
+h2:focus{outline:none}
+.intro{color:var(--muted); margin:0 0 .9rem; max-width:60ch}
+.intro:last-of-type{margin-bottom:1.75rem}
+.q{border:1px solid var(--line); background:var(--surface); border-radius:16px; margin:0 0 .9rem; padding:1.05rem 1.1rem 1.15rem; min-width:0}
+fieldset.q > legend{float:left; width:100%}
+fieldset.q > legend + *{clear:both}
+.q .opt span,.q input[type=text],.q input[type=email],.q input[type=tel],.q input[type=number],.q textarea,.q select{background:var(--bg)}
+.q[hidden]{display:none}
+.q legend,.q > label.lab{font-weight:600; font-size:1.05rem; padding:0; margin:0 0 .65rem; display:block}
+.req{font-weight:400; color:var(--accent); font-size:.85rem; margin-left:.3rem}
+.hint{color:var(--muted); font-size:.9rem; margin:-.4rem 0 .7rem}
+.err{color:var(--error); font-size:.9rem; margin:.5rem 0 0; min-height:0}
+.err:empty{display:none}
+
+/* choice pills */
+.opts{display:flex; flex-wrap:wrap; gap:8px}
+.opt{position:relative}
+.opt input{position:absolute; opacity:0; inset:0; margin:0; cursor:pointer}
+.opt span{
+  display:inline-block; padding:.55rem .95rem; border:1.5px solid var(--line); border-radius:999px;
+  background:var(--surface); cursor:pointer; user-select:none; transition:background .12s, border-color .12s;
+}
+.opt input:checked + span{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+.opt input:focus-visible + span{outline:3px solid var(--accent); outline-offset:2px}
+.opt:hover span{border-color:var(--accent)}
+
+.opts.two{display:grid; grid-template-columns:1fr 1fr}
+.opts.two .opt span{display:block; text-align:center; border-radius:12px; padding:.75rem .6rem; height:100%}
+.q.tight{margin-bottom:.9rem}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+.resume{display:flex; flex-wrap:wrap; align-items:center; gap:.4rem .9rem; background:var(--accent-soft); border-radius:12px; padding:.7rem 1rem; margin:-.5rem 0 1.5rem; font-size:.95rem}
+.resume[hidden],.foot[hidden]{display:none}
+.linkbtn{background:none; border:0; padding:0; color:var(--accent); font-weight:600; text-decoration:underline; cursor:pointer}
+.card-wrap{margin-top:1.5rem}
+.card-wrap canvas{width:100%; max-width:360px; height:auto; border-radius:16px; display:block; margin-bottom:.9rem}
+.foot{margin-top:2rem; font-size:.9rem; color:var(--muted)}
+.grp{font-size:.85rem; font-weight:600; color:var(--muted); margin:.9rem 0 .45rem; text-transform:uppercase; letter-spacing:.04em}
+.grp:first-of-type{margin-top:0}
+@media (max-width:600px){
+  .nav{position:sticky; bottom:0; z-index:5; background:var(--bg); margin-top:1.5rem; padding:.8rem 0 calc(.8rem + env(safe-area-inset-bottom,0px))}
+  textarea{min-height:4.5rem}
+}
+.q.fun{background:var(--fun-bg); border-color:var(--fun-line)}
+.q.fun .opt span{background:var(--surface); font-weight:600; font-size:1.02rem; padding:.9rem .7rem}
+.q.fun .opt input:checked + span{background:var(--accent); color:var(--accent-ink)}
+/* finish screen */
+.done-box h2.big{font-size:clamp(2.4rem,8vw,3.2rem); line-height:1; margin-bottom:.75rem}
+.done-box h2.big span{color:var(--accent)}
+.next-steps{margin:1rem 0 0; padding-left:1.2rem}
+.next-steps li{margin:.35rem 0}
+.card-wrap{display:flex; flex-direction:column; align-items:center; text-align:center}
+.card-wrap canvas{margin-left:auto; margin-right:auto}
+/* scales */
+.scale{display:grid; grid-template-columns:repeat(var(--n),minmax(0,1fr)); gap:6px}
+.scale .opt span{display:block; text-align:center; padding:.55rem 0; border-radius:10px}
+.ends{display:flex; justify-content:space-between; gap:12px; color:var(--muted); font-size:.85rem; margin-top:.35rem}
+.extra{margin-top:.6rem}
+
+/* grid */
+.grid-row{display:grid; grid-template-columns:minmax(120px,11rem) 1fr; gap:10px; align-items:center; margin-bottom:.6rem}
+.grid-row .lab2{font-size:.98rem}
+@media (max-width:520px){.grid-row{grid-template-columns:1fr}}
+
+/* text inputs */
+input[type=text],input[type=email],input[type=tel],input[type=number],textarea,select{
+  width:100%; font:inherit; color:var(--ink); background:var(--surface);
+  border:1.5px solid var(--line); border-radius:10px; padding:.65rem .8rem;
+}
+textarea{min-height:5.5rem; resize:vertical}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--accent); outline-offset:1px; border-color:var(--accent)}
+.pair[hidden]{display:none}
+.pair{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.pair label{font-size:.9rem; color:var(--muted); display:block; margin-bottom:.25rem}
+#photo-preview img{display:block; max-width:200px; border-radius:12px; margin:.75rem 0}
+#photo-preview button{padding:.5rem 1rem; font-size:.9rem}
+.count{font-size:.8rem; color:var(--muted); text-align:right; margin-top:.2rem}
+
+/* single checkbox */
+.check{display:flex; gap:.7rem; align-items:flex-start; cursor:pointer}
+.check input{width:1.25rem; height:1.25rem; margin-top:.15rem; accent-color:var(--accent); flex:none}
+
+/* nav */
+.nav{display:flex; justify-content:space-between; gap:12px; margin-top:2.5rem; padding-top:1.25rem; border-top:1px solid var(--line)}
+button{font:inherit; font-weight:600; border-radius:999px; padding:.75rem 1.4rem; cursor:pointer; border:1.5px solid var(--accent)}
+.primary{background:var(--accent); color:var(--accent-ink)}
+.secondary{background:transparent; color:var(--accent)}
+button:focus-visible{outline:3px solid var(--accent); outline-offset:3px}
+button[disabled]{opacity:.55; cursor:progress}
+.hp{position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden}
+
+.done-box{background:var(--surface); border:1.5px solid var(--line); border-radius:16px; padding:1.5rem}
+details{margin-top:1.25rem}
+pre{white-space:pre-wrap; word-break:break-word; font-size:.8rem; background:var(--bg); padding:1rem; border-radius:10px; overflow-x:auto}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="brand">Y<span>match</span></p>
+  <p class="sub">Takes about 15 minutes to fill out.</p>
+  <div class="resume" id="resume" hidden><span>We saved your answers from last time, so you can pick up where you left off.</span><button type="button" class="linkbtn" id="startOver">Start over</button></div>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+  <p class="where" id="where"></p>
+  <form id="form" novalidate>
+    <div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+    <section id="page"></section>
+    <div class="nav">
+      <button type="button" class="secondary" id="back">Back</button>
+      <button type="submit" class="primary" id="next">Next</button>
+    </div>
+  </form>
+  <section id="done" hidden></section>
+  <p class="foot" id="foot">Your answers are saved on this device until you send them. On a shared computer? <button type="button" class="linkbtn" id="clearDraft">Clear my answers</button></p>
+</main>
+
+<script>
+/* =========================================================
+   CONFIG
+   Paste your Google Apps Script web app URL here.
+   Leave empty to run in preview mode (nothing is sent).
+   ========================================================= */
+const ENDPOINT = "";
+const SURVEY_VERSION = "v20-2026-10";
+
+/* ---------- question builders (everything optional unless required:true) ---------- */
+const choice = (id,label,options,o={}) => ({id,label,type:"choice",options,...o});
+const multi  = (id,label,options,o={}) => ({id,label,type:"multi",options,...o});
+const scale  = (id,label,min,max,lo,hi,o={}) => ({id,label,type:"scale",min,max,lo,hi,...o});
+const text   = (id,label,o={}) => ({id,label,type:"text",max:300,...o});
+const field  = (id,label,inputType,o={}) => ({id,label,type:"input",inputType,...o});
+const check  = (id,label,o={}) => ({id,label,type:"check",...o});
+const select = (id,label,options,o={}) => ({id,label,type:"select",options,...o});
+const grid   = (id,label,rows,min,max,lo,hi,o={}) => ({id,label,type:"grid",rows,min,max,lo,hi,...o});
+const ages   = (id,label,o={}) => ({id,label,type:"ages",...o});
+const hrange = (id,label,o={}) => ({id,label,type:"hrange",...o});
+const photo  = (id,label,o={}) => ({id,label,type:"photo",...o});
+const pair   = (id,label,a,b,o={}) => ({id,label,type:"choice",options:[a,b],two:true,...o});
+
+/* IMPORTANT: a question's showIf may only use answers from EARLIER pages,
+   so questions never vanish while someone is looking at the page. */
+
+/* Orthodoxy score: average of the five faith agree/disagree items, with the
+   "disagree with leaders" item reversed. Needs at least 3 answers.
+   Very devout (for skip logic) = LDS with a score of 6.5 or higher. Change in one place. */
+const ORTHO = [["orthoLeaders",false],["orthoDisagree",true],["orthoStudy",false],["orthoSabbath",false],["orthoFamily",false]];
+const orthodoxy = A => {
+  const v = ORTHO.filter(([id])=>typeof A[id]==="number").map(([id,rev])=>rev ? 8-A[id] : A[id]);
+  return v.length>=3 ? v.reduce((a,b)=>a+b,0)/v.length : null;
+};
+const DEVOUT = A => A.isLDS === "Yes" && (orthodoxy(A) ?? 0) >= 6.5;
+
+/* "Would you date someone who..." is skipped when the answer is implied; the implied value is recorded. */
+const standardsFollowUp = own => ({
+  showIf: A => !(A[own] === "Yes" || (A[own] === "No" && DEVOUT(A))),
+  impute: A => A[own] === "Yes" ? "Yes" : "No"
+});
+
+const CUISINES = ["American","Mexican","Italian","Chinese","Japanese or sushi","Thai","Indian","Korean","Mediterranean","Hawaiian or Polynesian"];
+const ACTIVITIES = ["Hiking","Climbing gym","Bowling","Mini golf","Escape room","Board game café","Pottery or art class","Cooking class","Ice skating","Museum","Live music","Arcade"];
+const FAITHS = ["Catholic","Protestant or other Christian","Orthodox Christian","Jewish","Muslim","Hindu","Buddhist","Spiritual but not religious","Agnostic","Atheist","Other"];
+const VALUES = ["Faith","Family","Honesty","Kindness","Ambition","Service","Loyalty","Adventure","Learning","Humor","Health","Financial security","Creativity","Independence"];
+const HEIGHTS = Array.from({length:23},(_,i)=>{const n=58+i;return {v:n,l:`${Math.floor(n/12)}′${n%12}″`};});
+const GRAD_TERMS = ["December 2026","April 2027","August 2027","December 2027","April 2028","August 2028","December 2028","2029 or later"];
+const ETHNICITIES = ["American Indian or Alaska Native","Asian","Black or African American","Hispanic or Latino","Native Hawaiian or Pacific Islander","White","Other"];
+
+/* ---------- fun questions, mixed into the serious pages below ---------- */
+const FUN_PAGES = [
+ { title:"Would you rather",
+   intro:"Go with your gut and pick the one that's more you.",
+   qs:[
+    pair("wyrFamily","Live near family, or move wherever the best opportunity is?","Live near family","Move for the opportunity"),
+    pair("wyrMoney","Spend extra money on a trip, or put it in savings?","Take the trip","Save it"),
+ ]},
+ { title:"Would you rather date someone who…",
+   intro:"Both are great. Which matters more to you?",
+   qs:[
+    pair("pConversation","Loves deep late-night conversations, or easy, lighthearted fun?","Deep conversations","Lighthearted fun"),
+ ]},
+ { title:"This or that",
+   intro:"Rapid fire. Don't overthink it.",
+   qs:[
+    pair("totSports","","Live sports","Movie night"),
+ ]}
+];
+
+/* ---------- the survey ---------- */
+const PAGES = [
+ { title:"Before you start",
+   intro:[
+     "Your name and contact info are stored separately from your answers, linked only by a random ID. We never sell or share your data.",
+     "A match sees your first name, a few general things you have in common, and your photo if you choose to share it. Your contact info is shared only if you both say yes.",
+     "Only your name, gender and BYU email are required. Everything else is optional, but the more you answer, the better we can match you."],
+   qs:[
+    check("is18","I am 18 or older.",{required:true}),
+    check("consent","I agree to Ymatch storing my answers to find me a match, and I can ask for them to be deleted anytime.",{required:true}),
+    field("firstName","First name","text",{required:true,autocomplete:"given-name"}),
+    field("email","BYU email","email",{required:true,autocomplete:"email",hint:"Must end in @byu.edu"}),
+    field("phone","Phone number","tel",{autocomplete:"tel",hint:"Used only to coordinate a date you've both accepted."})
+ ]},
+ { title:"About you",
+   qs:[
+    choice("gender","I am a",["Man","Woman"],{required:true}),
+    field("age","Your age","number",{min:18,max:99}),
+    field("hometown","Hometown","text",{hint:"City and state or country."}),
+    field("major","Your major","text"),
+    select("graduation","When do you expect to graduate?",GRAD_TERMS),
+    select("height","Your height",HEIGHTS),
+    choice("marriedKids","Have you been married before, or do you have children?",["Neither","Been married before","Have children","Both"]),
+    choice("isLDS","Are you a member of The Church of Jesus Christ of Latter-day Saints?",["Yes","No"]),
+    multi("words","Pick 3 words that describe you.",["Adventurous","Laid-back","Driven","Goofy","Thoughtful","Creative","Outdoorsy","Bookish","Competitive","Spontaneous","Organized","Witty","Curious","Energetic","Calm"],{max:3})
+ ]},
+ { title:"What you're looking for",
+   qs:[
+    choice("lookingFor","What are you looking for right now?",["Casual dating","Something serious","Dating toward marriage in the next 1–2 years"]),
+    choice("marriageTiming","When would you ideally like to be married?",["Within a year","1–2 years","3–5 years","5+ years","Not sure"]),
+    choice("kidsCount","How many children would you like?",["None","1–2","3–4","5 or more","Not sure yet"]),
+    choice("kidsOpen","Would you date someone who wants a different number of kids than you?",["Yes","Maybe","No"]),
+    ages("ageRange","Age range you'd date"),
+    hrange("heightRange","Heights you'd date",{options:["Anyone taller than me","Anyone shorter than me","No preference","A specific range"]}),
+    choice("datePrevMarriedKids","Would you date someone who's been married before or has children?",["Yes","Maybe","No"]),
+    multi("matterMost","Which 3 things matter most to you in a match?",["Shared faith","Family plans","Kindness","Sense of humor","Ambition","Physical attraction","Shared interests","Similar lifestyle","Emotional maturity","Good communication","Financial stability","Shared politics"],{max:3}),
+    text("hope","Describe your ideal match.",{long:true})
+ ]},
+ { title:"Family life",
+   qs:[
+    choice("kidsTiming","When would you like to start having kids?",["Right after marriage","1–2 years after marriage","3–5 years after marriage","5+ years after marriage","Not sure yet","Don't have strong feelings"],{showIf:A=>A.kidsCount!=="None"}),
+    choice("stayHomeSelf","Would you like to stay home with young kids?",["Yes","Part-time","No","Not sure"],{showIf:A=>A.kidsCount!=="None"}),
+    choice("stayHomeSpouse","Would you like your spouse to stay home with young kids?",["Yes","Part-time","No","Not sure"],{showIf:A=>A.kidsCount!=="None"})
+ ]},
+ { title:"Values",
+   qs:[
+    multi("coreValues","Which values do you prioritize most?",VALUES,{max:3,hint:"Pick up to 3."}),
+    scale("politics","Where would you place yourself politically?",1,7,"Very liberal","Very conservative"),
+    choice("politicsOpen","Would you date someone with different political views?",["Yes","Only if they're close to mine","No"]),
+    text("lifeGoals","What are 3 things you want to accomplish in your life?",{long:true,max:400})
+ ]},
+ { title:"Your everyday life",
+   qs:[
+    choice("bedtime","On a typical weeknight, when do you go to sleep?",["Before 10","10–11","11–12","After 12"]),
+    choice("nightsOut","How many evenings a week do you want to be out socially?",["0–1","2–3","4+"]),
+    choice("partnerOutgoing","Compared to you, how outgoing do you want a partner to be?",["Less","About the same","More","Doesn't matter"]),
+    text("idealSaturday","Describe your ideal Saturday.",{long:true}),
+    text("favorites","Share a few favorite books, podcasts, songs, TV shows, or movies. Why do you like them?",{long:true,max:400})
+ ]},
+ { title:"Faith",
+   qs:[
+    select("otherFaith","What is your faith or worldview?",FAITHS,{showIf:A=>A.isLDS==="No"}),
+    scale("orthoLeaders","I follow the counsel of Church leaders even when I don't fully understand the reason.",1,7,"Strongly disagree","Strongly agree",{showIf:A=>A.isLDS==="Yes"}),
+    scale("orthoDisagree","It's okay to respectfully disagree with Church leaders on some issues.",1,7,"Strongly disagree","Strongly agree",{showIf:A=>A.isLDS==="Yes"}),
+    scale("orthoStudy","I pray and study the scriptures on most days.",1,7,"Strongly disagree","Strongly agree",{showIf:A=>A.isLDS==="Yes"}),
+    scale("orthoSabbath","I keep the Sabbath strictly, like no shopping, sports or entertainment on Sundays.",1,7,"Strongly disagree","Strongly agree",{showIf:A=>A.isLDS==="Yes"}),
+    scale("orthoFamily","I want the gospel to be at the center of our family life.",1,7,"Strongly disagree","Strongly agree",{showIf:A=>A.isLDS==="Yes"}),
+    choice("mission","Have you served, or do you plan to serve, a mission?",["I've served one","Leaving within the next year","Planning to serve later","Not planning to serve"],{showIf:A=>A.isLDS==="Yes"}),
+    choice("alcohol","Do you drink alcohol?",["Yes","No"],{hint:"No judgment here. We only use these answers to avoid matching you with someone you wouldn't date."}),
+    choice("tobacco","Do you use tobacco or vape?",["Yes","No"]),
+    choice("coffee","Do you drink coffee or tea?",["Yes","No"])
+ ]},
+ { title:"Faith in a partner",
+   qs:[
+    scale("templeRecommend","How important is it that your future spouse holds a temple recommend?",1,7,"Not important","Essential",{showIf:A=>A.isLDS==="Yes"}),
+    choice("missionPartner","How important is it to you that your future spouse served a mission?",["Very important","Somewhat important","Doesn't matter"],{showIf:A=>A.isLDS==="Yes"}),
+    choice("differentFaith","Would you date someone of a different faith?",["Yes","Maybe","No"]),
+    choice("dateAlcohol","Would you date someone who drinks alcohol?",["Yes","No","Depends"],standardsFollowUp("alcohol")),
+    choice("dateTobacco","Would you date someone who uses tobacco or vapes?",["Yes","No","Depends"],standardsFollowUp("tobacco")),
+    choice("dateCoffee","Would you date someone who drinks coffee or tea?",["Yes","No","Depends"],standardsFollowUp("coffee")),
+    text("faithJourney","Anything else you'd like to share about your faith?",{long:true,max:600,hint:"This is the place for anything the questions above didn't capture, like your faith journey."})
+ ]},
+ { title:"Logistics",
+   intro:"A few things we need before we can plan a date for you.",
+   qs:[
+    choice("calendar","Want to link your Google Calendar so we can find a time you're both free?",["Yes, send me a secure link","No, I'll pick times"],{hint:"We'd only see when you're busy, never what your events are."}),
+    choice("transport","How do you get around?",["I have a car","Bike or scooter","Walk or bus"]),
+    multi("cantEat","Any foods you can't or won't eat?",["None","Nuts","Gluten","Dairy","Shellfish","Eggs","Vegetarian","Vegan","Other"],{exclusive:"None"})
+ ]},
+ { title:"Planning your date",
+   intro:"We use this only to plan a date you'll both enjoy.",
+   qs:[
+    multi("availability","Which times are you usually free for a date?",["Monday evening","Tuesday evening","Wednesday evening","Thursday evening","Friday evening","Saturday daytime","Saturday evening","Sunday"],{hint:"Pick all that apply.",showIf:A=>A.calendar!=="Yes, send me a secure link"}),
+    choice("severe","Are any of your food restrictions serious enough that the restaurant must be told?",["Yes","No"],{showIf:A=>(A.cantEat||[]).some(x=>x!=="None")}),
+    multi("comfort","What would make you comfortable on a first date?",["Daytime","Busy public place","An activity to focus on","Short, under 90 minutes"],{hint:"Pick all that apply."}),
+    choice("menSpend","What are you willing to spend on a first date?",["Under $15","$15–30","$30–50","$50+"],{showIf:A=>A.gender==="Man"}),
+    choice("womenPay","On a first date, should he pay?",["Yes, he should pay","I'm happy to chip in up to $15","I'm happy to chip in up to $30","I'm happy to chip in more than $30"],{showIf:A=>A.gender==="Woman"}),
+    choice("doubleDate","Would you prefer a double date for your first meeting?",["Yes, I'd prefer it","I'm open to it","No, just the two of us"]),
+    multi("dateFood","What sounds good for a date?",[],{hint:"Pick all that sound good.",groups:[
+      {label:"Food",options:CUISINES},
+      {label:"Treats and stops",options:["Dessert or treat shop","Soda shop","Café","Food truck"]}]}),
+    multi("enjoy","Which activities would you enjoy on a date?",ACTIVITIES),
+    text("planNotes","Anything else we should know to plan a good date for you?",{long:true,max:400,hint:"Like other foods to avoid, or anything that would make a place work better for you, such as stairs, seating or sensory needs."})
+ ]},
+ { title:"Your photo",
+   qs:[
+    photo("photo","Add a photo")
+ ]},
+ { title:"Last step",
+   qs:[
+    choice("photoShare","Can we share your photo with matches when we send them info about you?",["Yes","No"],{showIf:A=>!!A.photo}),
+    choice("hearAbout","How did you hear about Ymatch?",["Instagram or social media","A friend","Flyer or poster","Class or club announcement","Other"]),
+    text("blockList","Anyone you don't want to be matched with?",{long:true,max:500,hint:"For example, an ex or someone you've had a bad date with. Names or BYU emails."}),
+    text("lostInterest","What's made you lose interest after a first date in the past?",{long:true,max:400}),
+    text("dealbreakers","Anything that's a dealbreaker for you?",{long:true,max:400})
+ ]}
+];
+
+
+/* ---------- mix fun questions into the serious pages ----------
+   Each page lists the fun questions it gets; they're spread evenly between its questions. */
+const MIX = {
+  "Family life":         ["wyrFamily"],
+  "Values":              ["wyrMoney"],
+  "Your everyday life":  ["pConversation","totSports"]
+};
+(function mixFun(){
+  const pool={};
+  for(const pg of FUN_PAGES) for(const q of pg.qs){
+    const lc=q.label ? q.label[0].toLowerCase()+q.label.slice(1) : "";
+    if(q.id.startsWith("wyr")) q.label="Would you rather "+lc;
+    else if(q.id.startsWith("p")) q.label="Would you rather date someone who "+lc;
+    else q.label="Quick pick";
+    pool[q.id]=q;
+  }
+  for(const pg of PAGES){
+    const fun=(MIX[pg.title]||[]).map(id=>pool[id]).filter(Boolean);
+    if(!fun.length) continue;
+    const n=pg.qs.length, step=Math.max(1,Math.round(n/(fun.length+1)));
+    const out=[]; let f=0;
+    pg.qs.forEach((q,i)=>{ out.push(q); if((i+1)%step===0 && f<fun.length && i<n-1) out.push(fun[f++]); });
+    while(f<fun.length) out.push(fun[f++]);
+    pg.qs=out;
+  }
+})();
+
+/* Fields kept apart from answers (sent to the identity sheet only). */
+const IDENTITY = ["is18","consent","firstName","email","phone","photo","photoShare","blockList"];
+
+/* ---------- state ---------- */
+const A = {};
+let pageIx = 0;
+let photoPreview = null;
+let draftId = null;
+const pageTimes = {};
+let pageStart = Date.now();
+function ensureId(){
+  if(draftId) return draftId;
+  if(window.crypto && crypto.randomUUID) draftId = crypto.randomUUID();
+  else { const b=crypto.getRandomValues(new Uint8Array(16)); b[6]=(b[6]&15)|64; b[8]=(b[8]&63)|128;
+    const h=[...b].map(x=>x.toString(16).padStart(2,"0")).join(""); draftId=`${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`; }
+  return draftId;
+}
+/* Seconds spent on each page, for the pilot. */
+function tickTime(){
+  const t=PAGES[pageIx].title;
+  pageTimes[t]=(pageTimes[t]||0)+Math.round((Date.now()-pageStart)/1000);
+  pageStart=Date.now();
+}
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const allQs = () => PAGES.flatMap(p=>p.qs);
+const visible = q => !q.showIf || q.showIf(A);
+const pageHasQuestions = i => PAGES[i].qs.some(visible);
+
+/* ---------- render ---------- */
+function optHTML(type,name,value,label,checked){
+  return `<label class="opt"><input type="${type}" name="${esc(name)}" value="${esc(value)}"${checked?" checked":""}><span>${esc(label)}</span></label>`;
+}
+function scaleHTML(name,min,max,current,lo,hi){
+  let h=`<div class="scale" style="--n:${max-min+1}">`;
+  for(let i=min;i<=max;i++) h+=optHTML("radio",name,i,i,Number(current)===i);
+  return h+`</div><div class="ends"><span>${esc(lo)}</span><span>${esc(hi)}</span></div>`;
+}
+function renderQ(q){
+  const req = q.required ? ` <span class="req">Required</span>` : "";
+  const hint = q.hint ? `<p class="hint">${esc(q.hint)}</p>` : "";
+  const err = `<p class="err" id="err-${q.id}" role="alert"></p>`;
+  let inner="";
+  switch(q.type){
+    case "choice":
+      inner=`<div class="opts">${q.options.map(o=>optHTML("radio",q.id,o,o,A[q.id]===o)).join("")}</div>`; break;
+    case "multi": {
+      const groups = q.groups || [{label:"",options:q.options}];
+      inner=groups.map(g=>`${g.label?`<p class="grp">${esc(g.label)}</p>`:""}<div class="opts">${g.options.map(o=>optHTML("checkbox",q.id,o,o,(A[q.id]||[]).includes(o))).join("")}</div>`).join("");
+      break;
+    }
+    case "scale":
+      inner=scaleHTML(q.id,q.min,q.max,A[q.id],q.lo,q.hi);
+      if(q.extra) inner+=`<div class="opts extra">${optHTML("radio",q.id,q.extra,q.extra,A[q.id]===q.extra)}</div>`;
+      break;
+    case "grid":
+      inner=q.rows.map(r=>`<div class="grid-row"><span class="lab2">${esc(r.label)}</span>${scaleHTML(r.id,q.min,q.max,A[r.id],q.lo,q.hi)}</div>`).join(""); break;
+    case "input":
+      return `<div class="q" data-id="${q.id}"><label class="lab" for="f-${q.id}">${esc(q.label)}${req}</label>${hint}
+        <input id="f-${q.id}" name="${q.id}" type="${q.inputType}" ${q.autocomplete?`autocomplete="${q.autocomplete}"`:""} ${q.min!=null?`min="${q.min}" max="${q.max}"`:""} ${q.step?`step="${q.step}"`:""} value="${esc(A[q.id]??"")}">${err}</div>`;
+    case "ages":
+      return `<fieldset class="q" data-id="${q.id}"><legend>${esc(q.label)}</legend><div class="pair">
+        <div><label for="f-ageMin">Youngest</label><input id="f-ageMin" name="ageMin" type="number" min="18" max="99" value="${esc(A.ageMin??"")}"></div>
+        <div><label for="f-ageMax">Oldest</label><input id="f-ageMax" name="ageMax" type="number" min="18" max="99" value="${esc(A.ageMax??"")}"></div>
+        </div>${err}</fieldset>`;
+    case "select":
+      return `<div class="q" data-id="${q.id}"><label class="lab" for="f-${q.id}">${esc(q.label)}</label>${hint}
+        <select id="f-${q.id}" name="${q.id}"><option value="">Choose one</option>${q.options.map(o=>{const v=typeof o==="object"?o.v:o,l=typeof o==="object"?o.l:o;return `<option value="${esc(v)}"${String(A[q.id])===String(v)?" selected":""}>${esc(l)}</option>`;}).join("")}</select>${err}</div>`;
+    case "hrange": {
+      const opts = cur => `<option value="">Choose one</option><option value="No limit"${cur==="No limit"?" selected":""}>No limit</option>`+HEIGHTS.map(h=>`<option value="${h.v}"${Number(cur)===h.v?" selected":""}>${h.l}</option>`).join("");
+      const range = A.heightPref==="A specific range";
+      return `<fieldset class="q" data-id="${q.id}"><legend>${esc(q.label)}</legend>
+        <div class="opts">${q.options.map(o=>optHTML("radio","heightPref",o,o,A.heightPref===o)).join("")}</div>
+        <div class="pair hr-range" style="margin-top:.8rem"${range?"":" hidden"}>
+        <div><label for="f-heightMin">Shortest</label><select id="f-heightMin" name="heightMin">${opts(A.heightMin)}</select></div>
+        <div><label for="f-heightMax">Tallest</label><select id="f-heightMax" name="heightMax">${opts(A.heightMax)}</select></div>
+        </div>${err}</fieldset>`;
+    }
+    case "photo":
+      return `<div class="q" data-id="${q.id}"><label class="lab" for="f-photo">${esc(q.label)}</label>${hint}
+        <input id="f-photo" name="photo" type="file" accept="image/*"><div id="photo-preview">${photoHTML()}</div>${err}</div>`;
+    case "text": {
+      const tag = q.long
+        ? `<textarea id="f-${q.id}" name="${q.id}" maxlength="${q.max}" placeholder="A sentence or two is plenty.">${esc(A[q.id]??"")}</textarea>`
+        : `<input id="f-${q.id}" name="${q.id}" type="text" maxlength="${q.max}" value="${esc(A[q.id]??"")}">`;
+      return `<div class="q" data-id="${q.id}"><label class="lab" for="f-${q.id}">${esc(q.label)}</label>${hint}${tag}
+        ${q.long?`<p class="count" id="c-${q.id}">${(A[q.id]||"").length}/${q.max}</p>`:""}${err}</div>`;
+    }
+    case "check":
+      return `<div class="q" data-id="${q.id}"><label class="check"><input type="checkbox" name="${q.id}"${A[q.id]?" checked":""}><span>${esc(q.label)}${req}</span></label>${err}</div>`;
+  }
+  if(q.two) inner = inner.replace('<div class="opts">','<div class="opts two">');
+  const legend = q.label ? `<legend>${esc(q.label)}${req}</legend>` : `<legend class="sr">${esc(q.options.join(" or "))}</legend>`;
+  const fun = /^(wyr|tot)/.test(q.id) || /^p[A-Z]/.test(q.id);
+  return `<fieldset class="q${q.label?"":" tight"}${fun?" fun":""}" data-id="${q.id}">${legend}${hint}${inner}${err}</fieldset>`;
+}
+function photoHTML(){
+  return photoPreview ? `<img src="${photoPreview}" alt="Your photo"><button type="button" class="secondary" id="photo-remove">Remove photo</button>` : "";
+}
+function handlePhoto(input){
+  const f=input.files && input.files[0]; if(!f) return;
+  setErr("photo","");
+  const url=URL.createObjectURL(f); const img=new Image();
+  img.onload=()=>{
+    const max=900, sc=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+    const c=document.createElement("canvas"); c.width=Math.round(img.naturalWidth*sc); c.height=Math.round(img.naturalHeight*sc);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    photoPreview=c.toDataURL("image/jpeg",0.85); A.photo=photoPreview.split(",")[1];
+    URL.revokeObjectURL(url); $("#photo-preview").innerHTML=photoHTML();
+  };
+  img.onerror=()=>{ URL.revokeObjectURL(url); input.value=""; setErr("photo","That file couldn't be read as an image. Try a JPG or PNG."); };
+  img.src=url;
+}
+document.addEventListener("click",e=>{
+  if(e.target.id==="photo-remove"){ delete A.photo; photoPreview=null; $("#f-photo").value=""; $("#photo-preview").innerHTML=""; }
+});
+/* ---------- save and resume (this device only; the photo is never saved) ---------- */
+const DRAFT_KEY = "ymatch-draft";
+function saveDraft(){
+  try{ const {photo,...rest}=A; localStorage.setItem(DRAFT_KEY, JSON.stringify({v:SURVEY_VERSION, page:pageIx, id:draftId, times:pageTimes, A:rest})); }catch(e){}
+}
+function clearDraft(){ try{ localStorage.removeItem(DRAFT_KEY); }catch(e){} }
+function loadDraft(){
+  try{
+    const d=JSON.parse(localStorage.getItem(DRAFT_KEY)||"null");
+    if(!d || !d.A || !Object.keys(d.A).length) return false;
+    Object.assign(A,d.A);
+    if(d.id) draftId=d.id;
+    if(d.times) Object.assign(pageTimes,d.times);
+    pageIx = Math.min(Math.max(0,d.page|0), PAGES.length-1);
+    if(!pageHasQuestions(pageIx)) pageIx=0;
+    return true;
+  }catch(e){ return false; }
+}
+function resetAll(){
+  clearDraft(); for(const k of Object.keys(A)) delete A[k];
+  for(const k of Object.keys(pageTimes)) delete pageTimes[k];
+  draftId=null;
+  photoPreview=null; pageIx=0; $("#resume").hidden=true; renderPage();
+}
+$("#startOver").addEventListener("click",resetAll);
+$("#clearDraft").addEventListener("click",resetAll);
+
+/* Send answers so far to the sheet each time someone moves forward (no photo), so you can email a reminder link. */
+function savePartial(){
+  if(!ENDPOINT || !A.email) return;
+  const payload=buildPayload("partial");
+  delete payload.identity.photo;
+  try{ fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload),keepalive:true}).catch(()=>{}); }catch(e){}
+}
+/* Restore answers from a reminder link (?resume=ID) when this device has no saved draft. */
+async function resumeFromServer(id){
+  const r=await fetch(`${ENDPOINT}?resume=${encodeURIComponent(id)}`);
+  const out=await r.json();
+  if(!out || !out.ok) return false;
+  for(const [k,v] of Object.entries({...(out.identity||{}),...(out.answers||{})})){
+    if(v==="" || v==null) continue;
+    const q=findQ(k);
+    A[k] = q && q.type==="multi" && typeof v==="string" ? v.split("; ") : v;
+  }
+  draftId=id;
+  pageIx=Math.min(Math.max(0,Number(out.lastPage)||0),PAGES.length-1);
+  if(!pageHasQuestions(pageIx)) pageIx=0;
+  return true;
+}
+
+function renderPage(){
+  pageStart=Date.now();
+  saveDraft();
+  const p = PAGES[pageIx];
+  const intro = [].concat(p.intro||[]).map(t=>`<p class="intro">${esc(t)}</p>`).join("");
+  /* Questions skipped by earlier answers are simply never drawn. */
+  $("#page").innerHTML = `<h2 tabindex="-1">${esc(p.title)}</h2>${intro}${p.qs.filter(visible).map(renderQ).join("")}`;
+  $("#progress").innerHTML = PAGES.map((_,i)=>`<i class="${i<pageIx?"done":i===pageIx?"now":""}"></i>`).join("");
+  $("#where").textContent = `Part ${pageIx+1} of ${PAGES.length}: ${p.title}`;
+  $("#back").style.visibility = pageIx===0 ? "hidden" : "visible";
+  updateNext();
+  window.scrollTo(0,0);
+  $("#page h2").focus({preventScroll:true});
+}
+function updateNext(){
+  const j=nextPage(pageIx);
+  $("#next").textContent = j===-1 ? "Send my answers" : `Next: ${PAGES[j].title}`;
+}
+function nextPage(i){ for(let j=i+1;j<PAGES.length;j++) if(pageHasQuestions(j)) return j; return -1; }
+function prevPage(i){ for(let j=i-1;j>=0;j--) if(pageHasQuestions(j)) return j; return -1; }
+
+/* ---------- input handling ---------- */
+const findQ = name => {
+  for(const q of allQs()){
+    if(q.id===name) return q;
+    if(q.type==="grid" && q.rows.some(r=>r.id===name)) return q;
+    if(q.type==="ages" && (name==="ageMin"||name==="ageMax")) return q;
+    if(q.type==="hrange" && (name==="heightPref"||name==="heightMin"||name==="heightMax")) return q;
+  }
+};
+function onInput(e){
+  const t = e.target; const name = t.name; if(!name || name==="website") return;
+  const q = findQ(name); if(!q) return;
+  if(q.type==="photo"){ handlePhoto(t); return; }
+  if(name==="heightPref"){
+    A.heightPref=t.value;
+    const box=document.querySelector(".hr-range"), range=t.value==="A specific range";
+    box.hidden=!range;
+    if(!range){ delete A.heightMin; delete A.heightMax; box.querySelectorAll("select").forEach(x=>x.value=""); setErr(q.id,""); }
+    return;
+  }
+  if(t.tagName==="SELECT"){ const v=t.value; A[name]= v==="" ? undefined : (isNaN(Number(v)) ? v : Number(v)); return; }
+  if(q.type==="multi"){
+    const boxes=[...document.querySelectorAll(`input[name="${name}"]`)];
+    if(q.exclusive && t.checked){
+      if(t.value===q.exclusive) boxes.forEach(b=>{ if(b!==t) b.checked=false; });
+      else boxes.forEach(b=>{ if(b.value===q.exclusive) b.checked=false; });
+    }
+    let picked = boxes.filter(b=>b.checked).map(b=>b.value);
+    if(q.max && picked.length>q.max){ t.checked=false; picked=picked.filter(v=>v!==t.value); setErr(q.id,`Pick up to ${q.max}.`); }
+    else setErr(q.id,"");
+    A[name]=picked;
+  } else if(q.type==="scale" || q.type==="grid"){
+    A[name] = (q.extra && t.value===q.extra) ? t.value : Number(t.value);
+  } else if(q.type==="check"){
+    A[name]=t.checked; setErr(q.id,"");
+  } else if(t.type==="number"){
+    A[name] = t.value==="" ? undefined : Number(t.value);
+  } else {
+    A[name]=t.value;
+    const c=document.getElementById(`c-${name}`); if(c) c.textContent=`${t.value.length}/${q.max}`;
+  }
+}
+$("#form").addEventListener("change",e=>{ onInput(e); saveDraft(); updateNext(); });
+$("#form").addEventListener("input",e=>{ if(e.target.matches("input[type=text],input[type=email],input[type=tel],input[type=number],textarea")){ onInput(e); saveDraft(); } });
+
+/* ---------- validation: required fields, plus format checks on anything filled in ---------- */
+function setErr(id,msg){ const el=document.getElementById(`err-${id}`); if(el) el.textContent=msg; }
+function validatePage(){
+  let firstBad=null;
+  for(const q of PAGES[pageIx].qs.filter(visible)){
+    let msg="";
+    const v=A[q.id];
+    const s=(v??"").toString().trim();
+    if(q.required && q.type==="check" && !v) msg="Check this box to continue.";
+    else if(q.required && q.type==="choice" && !v) msg="Choose an answer to continue.";
+    else if(q.required && q.type==="input" && !s) msg="This one is required.";
+    else if(q.type==="ages"){
+      const lo=A.ageMin, hi=A.ageMax;
+      if(lo!=null && lo<18) msg="The youngest age must be 18 or older.";
+      else if(lo!=null && hi!=null && lo>hi) msg="The youngest age can't be higher than the oldest.";
+    }
+    else if(q.type==="hrange"){
+      const lo=A.heightMin, hi=A.heightMax;
+      if(typeof lo==="number" && typeof hi==="number" && lo>hi) msg="The shortest height can't be taller than the tallest.";
+    }
+    else if(q.type==="input" && s){
+      if(q.id==="email" && !/^[^\s@]+@byu\.edu$/i.test(s)) msg="Use your @byu.edu email.";
+      else if(q.id==="age" && (Number(s)<18||Number(s)>99)) msg="Ymatch is only for people 18 and older.";
+      else if(q.id==="phone" && s.replace(/\D/g,"").length<10) msg="Enter a 10-digit phone number, or leave it blank.";
+    }
+    setErr(q.id,msg);
+    if(msg && !firstBad) firstBad=q.id;
+  }
+  if(firstBad){
+    const el=document.querySelector(`.q[data-id="${firstBad}"]`);
+    el.scrollIntoView({block:"center"});
+    const f=el.querySelector("input,select,textarea"); if(f) f.focus({preventScroll:true});
+    return false;
+  }
+  return true;
+}
+
+/* ---------- build payload ---------- */
+function buildPayload(kind){
+  const identity={}, answers={}, imputed=[], order=[];
+  for(const q of allQs()){
+    const ids = q.type==="grid" ? q.rows.map(r=>r.id) : q.type==="ages" ? ["ageMin","ageMax"] : q.type==="hrange" ? ["heightPref","heightMin","heightMax"] : [q.id];
+    for(const id of ids){
+      const target = IDENTITY.includes(id) ? identity : answers;
+      if(target===answers) order.push(id);
+      if(visible(q)){ if(A[id]!==undefined && A[id]!=="") target[id]=A[id]; }
+      else if(q.impute){ target[id]=q.impute(A); imputed.push(id); }
+    }
+  }
+  const os = orthodoxy(A);
+  if(os!=null) answers.orthodoxyScore = Math.round(os*10)/10;
+  order.push("orthodoxyScore");
+  return {kind:kind||"final", draftId:ensureId(), lastPage:pageIx, timing:pageTimes, version:SURVEY_VERSION, identity, answers, imputed, order, website:document.querySelector('[name=website]').value};
+}
+
+/* ---------- navigation and submit ---------- */
+$("#back").addEventListener("click",()=>{ const j=prevPage(pageIx); if(j>=0){ tickTime(); pageIx=j; renderPage(); }});
+$("#form").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(!validatePage()) return;
+  const j=nextPage(pageIx);
+  tickTime();
+  if(j!==-1){ pageIx=j; renderPage(); savePartial(); return; }
+  const btn=$("#next"); btn.disabled=true; btn.textContent="Sending…";
+  const payload=buildPayload("final");
+  if(!ENDPOINT){ return finish(payload,true); }
+  try{
+    const res=await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+    const out=await res.json().catch(()=>({ok:res.ok}));
+    if(!out.ok) throw new Error(out.error||"The server didn't accept the answers.");
+    finish();
+  }catch(err){
+    btn.disabled=false; btn.textContent="Send my answers";
+    const first=PAGES[pageIx].qs.find(visible);
+    setErr(first.id,`Your answers weren't sent: ${err.message} Check your connection and try again.`);
+  }
+});
+/* ---------- personality card: built only from quick picks and life would-you-rathers ---------- */
+function cardLines(){
+  const lines=[];
+  if((A.words||[]).length) lines.push(A.words.join(", "));
+  for(const q of allQs()) if((q.id.startsWith("tot")||q.id.startsWith("wyr")) && A[q.id]){
+    const other=q.options.find(o=>o!==A[q.id]);
+    lines.push(`${A[q.id]} over ${other.toLowerCase()}`);
+  }
+  return lines.slice(0,6);
+}
+function drawCard(){
+  const lines=cardLines(); if(lines.length<3) return null;
+  const W=1080,H=1350,c=document.createElement("canvas"); c.width=W; c.height=H;
+  const g=c.getContext("2d"), font='"Bricolage Grotesque",system-ui,sans-serif', accent="#FF8466";
+  g.fillStyle="#1F1A17"; g.fillRect(0,0,W,H);
+  g.fillStyle=accent; g.fillRect(0,0,W,18);
+  g.fillStyle="#FFFFFF"; g.font=`800 92px ${font}`; g.fillText("Y",90,190);
+  const yw=g.measureText("Y").width; g.fillStyle=accent; g.fillText("match",90+yw,190);
+  g.fillStyle="#FFFFFF"; g.font=`800 64px ${font}`;
+  const name=(A.firstName||"").trim();
+  g.fillText(name?`${name}'s picks`:"My picks",90,330);
+  g.font=`500 50px ${font}`;
+  const maxW=W-148-90;
+  const wrap=t=>{ const out=[]; let cur="";
+    for(const word of t.split(" ")){ const test=cur?cur+" "+word:word;
+      if(g.measureText(test).width>maxW && cur){ out.push(cur); cur=word; } else cur=test; }
+    if(cur) out.push(cur); return out; };
+  let y=470;
+  for(const t of lines){
+    const rows=wrap(t);
+    if(y+(rows.length-1)*62>H-170) break;          // stop before the footer
+    g.fillStyle=accent; g.beginPath(); g.arc(108,y-17,12,0,Math.PI*2); g.fill();
+    g.fillStyle="#F3ECE6"; rows.forEach((r,k)=>g.fillText(r,148,y+k*62));
+    y+=(rows.length-1)*62+112;
+  }
+  g.fillStyle="#B3A79E"; g.font=`500 36px ${font}`; g.fillText("Take the quiz at Ymatch",90,H-90);
+  return c;
+}
+function showCard(box){
+  const c=drawCard(); if(!c) return;
+  box.innerHTML=`<p>Here's your Ymatch card. Share it so your friends sign up too.</p>`;
+  c.setAttribute("role","img"); c.setAttribute("aria-label","Your Ymatch card: "+cardLines().join(", "));
+  box.appendChild(c);
+  const b=document.createElement("button"); b.type="button"; b.className="primary"; b.textContent="Save this card";
+  b.addEventListener("click",()=>{ const a=document.createElement("a"); a.href=c.toDataURL("image/png"); a.download="my-ymatch-card.png"; a.click(); });
+  box.appendChild(b);
+}
+
+function finish(payload,preview){
+  clearDraft(); $("#foot").hidden=true; $("#resume").hidden=true;
+  $("#form").hidden=true; $("#progress").hidden=true; $("#where").hidden=true;
+  const d=$("#done"); d.hidden=false;
+  const name=(A.firstName||"").trim();
+  d.innerHTML=`<div class="done-box"><h2 class="big" tabindex="-1">You're in${name?`, <span>${esc(name)}</span>`:""}.</h2>
+    <p><strong>Here's what happens next:</strong></p>
+    <ol class="next-steps">
+      <li>We'll email your BYU address when we've found you a match.</li>
+      <li>You'll see a few things you have in common and say yes or no. Nothing is booked until you both say yes.</li>
+      <li>We plan the date and send you both the details.</li>
+    </ol>
+    <div class="card-wrap" id="cardBox"></div>
+    ${preview?`<details><summary>Preview mode: nothing was sent. This is what would be sent.</summary><pre>${esc(JSON.stringify(payload,(k,v)=>k==="photo"&&typeof v==="string"?`[photo, about ${Math.round(v.length*0.75/1024)} KB]`:v,2))}</pre></details>`:""}</div>`;
+  const draw=()=>{ try{ showCard(document.getElementById("cardBox")); }catch(e){} };
+  (document.fonts && document.fonts.ready) ? document.fonts.ready.then(draw) : draw();
+  d.querySelector("h2").focus();
+}
+
+(async function start(){
+  let resumed = loadDraft();
+  const rid = new URLSearchParams(location.search).get("resume");
+  if(!resumed && ENDPOINT && rid && /^[0-9a-f-]{36}$/i.test(rid)){
+    try{ resumed = await resumeFromServer(rid.toLowerCase()); }catch(e){}
+  }
+  if(resumed) $("#resume").hidden=false;
+  renderPage();
+})();
+</script>
+</body>
+</html>
